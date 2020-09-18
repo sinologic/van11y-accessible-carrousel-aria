@@ -52,6 +52,9 @@
     const CARROUSEL_DATA_SPAN_TEXT = 'data-carrousel-span-text';
     const CARROUSEL_DATA_HIDE_ARROWS_FOCUS = 'data-carousel-hide-arrows-focus';
 
+    /*UPDATE ACIINFORMATICA*/
+    const CARROUSEL_DATA_AUTOPLAY = 'data-carrousel-autoplay';
+
     const VISUALLY_HIDDEN_CLASS = 'invisible';
 
     /*
@@ -222,6 +225,41 @@
      * @return {Array}
      */
     const $listCarrousels = (node = doc) => [].slice.call(node.querySelectorAll('.' + CARROUSEL));
+
+    const $detectAutoplay = (node = doc) => {
+        let mainContainer = node.querySelector('.' + CARROUSEL_CONTAINER);
+        let carrouselAutoplay = mainContainer.hasAttribute(CARROUSEL_DATA_AUTOPLAY) === true;
+
+        return carrouselAutoplay;
+    }
+
+    const $getCarouselContainer = (id = 'van11-carrousel') => {
+        return findById(id);
+    }
+
+    const $slideNext = () => {
+        let carrousel = $getCarouselContainer();
+        let carrouselContainer = carrousel.querySelector('.' + CARROUSEL_CONTAINER);
+
+        let current = Number(carrouselContainer.getAttribute(CARROUSEL_DATA_ACTIVE_SLIDE));
+
+        // find next one to activate
+        let controlListLink = carrousel.querySelector(`.${CARROUSEL_CONTROL_LIST_LINK}[${CARROUSEL_DATA_ELEMENT_NUMBER}="${current+1}"]`);
+        let panelControled;
+
+        if (controlListLink) {
+            panelControled = findById(controlListLink.getAttribute(ATTR_CONTROL));
+        } else {
+            controlListLink = carrousel.querySelector(`.${CARROUSEL_CONTROL_LIST_LINK}[${CARROUSEL_DATA_ELEMENT_NUMBER}="1"]`);
+            panelControled = findById(controlListLink.getAttribute(ATTR_CONTROL));
+        }
+
+        selectCarrouselElement({
+            controlListLink: controlListLink,
+            panelControled: panelControled,
+            carrouselContainer: carrouselContainer
+        });
+    }
 
     /**
      * Build carrousels for a container
@@ -489,27 +527,30 @@
                         // click on next
                         if (idButtonNext !== '' && eventName === 'click') {
                             let buttonNext = findById(idButtonNext);
-                            let carrousel = buttonNext.parentNode.parentNode;
-                            let carrouselContainer = carrousel.querySelector('.' + CARROUSEL_CONTAINER);
 
-                            let current = Number(carrouselContainer.getAttribute(CARROUSEL_DATA_ACTIVE_SLIDE));
-
-                            // find next one to activate
-                            let controlListLink = carrousel.querySelector(`.${CARROUSEL_CONTROL_LIST_LINK}[${CARROUSEL_DATA_ELEMENT_NUMBER}="${current+1}"]`);
-                            let panelControled;
-
-                            if (controlListLink) {
-                                panelControled = findById(controlListLink.getAttribute(ATTR_CONTROL));
-                            } else {
-                                controlListLink = carrousel.querySelector(`.${CARROUSEL_CONTROL_LIST_LINK}[${CARROUSEL_DATA_ELEMENT_NUMBER}="1"]`);
-                                panelControled = findById(controlListLink.getAttribute(ATTR_CONTROL));
-                            }
-
-                            selectCarrouselElement({
-                                controlListLink: controlListLink,
-                                panelControled: panelControled,
-                                carrouselContainer: carrouselContainer
-                            });
+                            $slideNext();
+                            //
+                            // let carrousel = buttonNext.parentNode.parentNode;
+                            // let carrouselContainer = carrousel.querySelector('.' + CARROUSEL_CONTAINER);
+                            //
+                            // let current = Number(carrouselContainer.getAttribute(CARROUSEL_DATA_ACTIVE_SLIDE));
+                            //
+                            // // find next one to activate
+                            // let controlListLink = carrousel.querySelector(`.${CARROUSEL_CONTROL_LIST_LINK}[${CARROUSEL_DATA_ELEMENT_NUMBER}="${current+1}"]`);
+                            // let panelControled;
+                            //
+                            // if (controlListLink) {
+                            //     panelControled = findById(controlListLink.getAttribute(ATTR_CONTROL));
+                            // } else {
+                            //     controlListLink = carrousel.querySelector(`.${CARROUSEL_CONTROL_LIST_LINK}[${CARROUSEL_DATA_ELEMENT_NUMBER}="1"]`);
+                            //     panelControled = findById(controlListLink.getAttribute(ATTR_CONTROL));
+                            // }
+                            //
+                            // selectCarrouselElement({
+                            //     controlListLink: controlListLink,
+                            //     panelControled: panelControled,
+                            //     carrouselContainer: carrouselContainer
+                            // });
 
                         }
 
@@ -596,6 +637,8 @@
 
         }
 
+        setInterval($slideNext, 4000);
+
     };
 
 
@@ -603,6 +646,9 @@
 
     const onLoad = () => {
         attach();
+
+        console.log('AUTOPLAY: ' + $detectAutoplay());
+
         document.removeEventListener('DOMContentLoaded', onLoad);
     }
 
